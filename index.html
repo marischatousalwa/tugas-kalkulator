@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulator Modern</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #1e1e24;
+    padding: 20px;
+  }
+
+  .calculator {
+    background-color: #2b2b36;
+    border-radius: 12px;
+    padding: 20px;
+    width: 100%;
+    max-width: 360px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+  }
+
+  .display {
+    color: #ffffff;
+    font-size: 48px;
+    text-align: right;
+    padding: 10px 10px 25px 10px;
+    min-height: 100px;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .display::-webkit-scrollbar { display: none; }
+
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  button {
+    border: none;
+    border-radius: 10px;
+    font-size: 22px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 16px 0;
+    transition: all 0.1s ease;
+  }
+
+  button:active {
+    transform: scale(0.95);
+  }
+
+  .btn-dark {
+    background-color: #30303d;
+    color: #ffffff;
+  }
+  .btn-dark:hover { background-color: #3b3b4a; }
+
+  .btn-purple {
+    background-color: #a9a6f5;
+    color: #2b2b36;
+  }
+  .btn-purple:hover { background-color: #b7b4f7; }
+
+  .btn-pink {
+    background-color: #f5a3b6;
+    color: #2b2b36;
+  }
+  .btn-pink:hover { background-color: #f7b1c1; }
+
+  .btn-green {
+    background-color: #a5d6a7;
+    color: #2b2b36;
+  }
+  .btn-green:hover { background-color: #b5e0b7; }
+
+  .span-2 { grid-column: span 2; }
+  .span-4 { grid-column: span 4; margin-top: 4px; }
+  .btn-small { font-size: 18px; }
+</style>
+</head>
+<body>
+
+<div class="calculator">
+  <div class="display" id="display">0</div>
+  <div class="buttons">
+    <button class="btn-pink" onclick="clearAll()">C</button>
+    <button class="btn-pink btn-small" onclick="del()">DEL</button>
+    <button class="btn-purple" onclick="add('(')">(</button>
+    <button class="btn-purple" onclick="add(')')">)</button>
+
+    <button class="btn-purple" onclick="add('%')">%</button>
+    <button class="btn-purple btn-small" onclick="add('√(')">√</button>
+    <button class="btn-purple" onclick="add('²')">x²</button>
+    <button class="btn-purple" onclick="add('^')">xʸ</button>
+
+    <button class="btn-dark" onclick="add('7')">7</button>
+    <button class="btn-dark" onclick="add('8')">8</button>
+    <button class="btn-dark" onclick="add('9')">9</button>
+    <button class="btn-purple" onclick="add('÷')">÷</button>
+
+    <button class="btn-dark" onclick="add('4')">4</button>
+    <button class="btn-dark" onclick="add('5')">5</button>
+    <button class="btn-dark" onclick="add('6')">6</button>
+    <button class="btn-purple" onclick="add('×')">×</button>
+
+    <button class="btn-dark" onclick="add('1')">1</button>
+    <button class="btn-dark" onclick="add('2')">2</button>
+    <button class="btn-dark" onclick="add('3')">3</button>
+    <button class="btn-purple" onclick="add('−')">−</button>
+
+    <button class="btn-dark span-2" onclick="add('0')">0</button>
+    <button class="btn-dark" onclick="add('.')">.</button>
+    <button class="btn-purple" onclick="add('+')">+</button>
+
+    <button class="btn-green span-4" onclick="calculate()">=</button>
+  </div>
+</div>
+
+<script>
+  let currentExpr = '';
+  const displayEl = document.getElementById('display');
+
+  function updateDisplay() {
+    displayEl.textContent = currentExpr || '0';
+    displayEl.scrollLeft = displayEl.scrollWidth;
+  }
+
+  function add(val) {
+    if (val === '.') {
+      const lastNum = currentExpr.split(/[\+\−\×\÷\%\^\(\)]/).pop();
+      if (lastNum.includes('.')) return;
+    }
+    currentExpr += val;
+    updateDisplay();
+  }
+
+  function clearAll() {
+    currentExpr = '';
+    updateDisplay();
+  }
+
+  function del() {
+    if (currentExpr.endsWith('√(')) {
+      currentExpr = currentExpr.slice(0, -2);
+    } else {
+      currentExpr = currentExpr.slice(0, -1);
+    }
+    updateDisplay();
+  }
+
+  function calculate() {
+    if (!currentExpr) return;
+    try {
+      let evalExpr = currentExpr
+        .replace(/×/g, '*')
+        .replace(/÷/g, '/')
+        .replace(/−/g, '-')
+        .replace(/²/g, '**2')
+        .replace(/\^/g, '**')
+        .replace(/√/g, 'Math.sqrt');
+
+      let result = eval(evalExpr);
+      
+      if (!isFinite(result) || isNaN(result)) {
+        throw new Error('Math Error');
+      }
+
+      if (result.toString().includes('.')) {
+        result = parseFloat(result.toFixed(8));
+      }
+
+      currentExpr = result.toString();
+      updateDisplay();
+    } catch (error) {
+      displayEl.textContent = 'Error';
+      currentExpr = '';
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (/[0-9\.\+\-\*\/\(\)\%\^]/.test(e.key)) {
+      add(e.key);
+    } else if (e.key === 'Enter' || e.key === '=') {
+      e.preventDefault();
+      calculate();
+    } else if (e.key === 'Backspace') {
+      del();
+    } else if (e.key === 'Escape') {
+      clearAll();
+    }
+  });
+</script>
+</body>
+</html>
